@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
+import { NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
 describe('UsersService', () => {
@@ -30,6 +31,10 @@ describe('UsersService', () => {
     service = module.get<UsersService>(UsersService);
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
@@ -42,5 +47,11 @@ describe('UsersService', () => {
       email: 'test@example.com',
     });
     expect(mockRepo.findOneBy).toHaveBeenCalledWith({ id: 1 });
+  });
+  it('should return an error if no user is found', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    (mockRepo.findOneBy as jest.Mock).mockResolvedValueOnce(null),
+      //const user = service.findOne(8);
+      await expect(service.findOne(8)).rejects.toThrow(NotFoundException);
   });
 });
