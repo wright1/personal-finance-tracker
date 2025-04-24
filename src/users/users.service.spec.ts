@@ -51,7 +51,6 @@ describe('UsersService', () => {
   it('should return an error if no user is found', async () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     (mockRepo.findOneBy as jest.Mock).mockResolvedValueOnce(null),
-      //const user = service.findOne(8);
       await expect(service.findOne(8)).rejects.toThrow(NotFoundException);
   });
 });
