@@ -6,17 +6,6 @@ describe('AuthService', () => {
   let service: AuthService;
   let usersService: Partial<UsersService>;
 
-  // let mockRepo = {
-  //   create: jest.fn().mockImplementation((dto) => {
-  //     return Promise.resolve({
-  //       id: 1,
-  //       name: dto.name,
-  //       email: dto.email,
-  //       password: dto.password,
-  //     });
-  //   }),
-  // };
-
   beforeEach(async () => {
     usersService = {
       findByEmail: jest.fn().mockResolvedValue(null),
@@ -27,13 +16,11 @@ describe('AuthService', () => {
         }),
       ),
     };
-  });
 
-  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        { provide: UsersService, useValue: usersService },
+        { provide: UsersService, useValue: usersService as UsersService },
       ],
     }).compile();
 
@@ -42,5 +29,16 @@ describe('AuthService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('should register a customer', async () => {
+    const result = await service.register(
+      'TestName',
+      'TestingName@example.com',
+      'newPassword000',
+    );
+
+    expect(result).toHaveProperty('email', 'TestingName@example.com');
+    expect(usersService.create).toHaveBeenCalled();
   });
 });

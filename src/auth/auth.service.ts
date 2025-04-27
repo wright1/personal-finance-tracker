@@ -8,8 +8,9 @@ export class AuthService {
   constructor(private usersService: UsersService) {}
 
   async register(name: string, email: string, password: string): Promise<User> {
-    const exists = this.usersService.findByEmail(email);
+    const exists = await this.usersService.findByEmail(email);
 
+    console.log('Result of findByEmail:', exists);
     if (exists) {
       throw new ConflictException('Email already in use');
     }
