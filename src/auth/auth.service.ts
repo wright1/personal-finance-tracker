@@ -1,11 +1,19 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
 
   async register(name: string, email: string, password: string): Promise<User> {
     const exists = await this.usersService.findByEmail(email);
@@ -22,5 +30,19 @@ export class AuthService {
       email,
       password: hashedPassword,
     });
+  }
+
+  async login(email: string, password: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) throw new UnauthorizedException('Invalid login details');
+
+    const valid = await bcrypt.compare(password, (await user).password);
+    if (!valid) throw new UnauthorizedException('Invalid login details');
+
+    const payload = { sub: user.id, email: user.email };
+
+    return {
+      accessToken: this.jwtService.sign(payload),
+    };
   }
 }
