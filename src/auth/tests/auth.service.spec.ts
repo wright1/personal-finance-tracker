@@ -91,7 +91,7 @@ describe('AuthService', () => {
     expect(usersService.create).toHaveBeenCalled();
   });
 
-  it('should throw an error if email already exists', async () => {
+  it('register customer should throw an error if email already exists', async () => {
     (usersService.findByEmail as jest.Mock).mockResolvedValue({
       id: 1,
       name: 'Claire',
