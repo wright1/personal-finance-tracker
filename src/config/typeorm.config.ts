@@ -1,15 +1,32 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+// src/config/typeorm.module.ts
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
-ConfigModule.forRoot(); // Loads environment variables from .env file
+@Module({
+  imports: [
+    // 1) Load the correct .env(.test) based on NODE_ENV
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
+    }),
 
-export const typeOrmConfig: TypeOrmModuleOptions = {
-  type: 'mysql',
-  host: process.env.DB_HOST || 'localhost',
-  port: Number(process.env.DB_PORT) || 3306,
-  username: process.env.DB_USER || 'user',
-  password: process.env.DB_PASSWORD || 'password',
-  database: process.env.DB_NAME || 'finance_tracker',
-  autoLoadEntities: true, // Automatically loads entity files
-  synchronize: true, // Auto-migrates schema (disable in production)
-};
+    // 2) Register TypeORM *as a dynamic module*, so the DataSource
+    //    provider is actually available to everyone else.
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'mysql',
+        host: config.get<string>('DB_HOST'),
+        port: config.get<number>('DB_PORT'),
+        username: config.get<string>('DB_USER'),
+        password: config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_NAME'),
+        autoLoadEntities: true,
+        synchronize: true, // OK for dev & tests
+      }),
+    }),
+  ],
+})
+export class TypeOrmConfigModule {}

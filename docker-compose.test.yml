@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  db-test:
+    image: mysql:8
+    container_name: finance_tracker_test_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: finance_tracker_test
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - '3307:3306' # map host 3307 → container 3306
+    volumes:
+      - mysql_test_data:/var/lib/mysql
+
+volumes:
+  mysql_test_data:
